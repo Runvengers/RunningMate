@@ -9,6 +9,7 @@ build/
 
 build.gradle
 application.properties
+application.yml
 
 
 
