@@ -11,6 +11,7 @@ import toyproject.runningmate.dto.UserDto;
 import toyproject.runningmate.repository.UserRepository;
 import toyproject.runningmate.service.UserService;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class UserController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final UserService userService;
+
 
     //회원가입
     @PostMapping("/join")

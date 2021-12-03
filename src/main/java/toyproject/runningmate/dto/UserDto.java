@@ -24,4 +24,11 @@ public class UserDto {
     private String address;
     private Crew crew;
     private List<String> roles = new ArrayList<>();
+
+    /*
+
+
+     */
+
+
 }

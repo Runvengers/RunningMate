@@ -10,6 +10,7 @@ import toyproject.runningmate.repository.UserRepository;
 @RequiredArgsConstructor
 public class UserService {
 
+
     public UserDto getUserDto(User user) {
         UserDto userDto = UserDto.builder()
                 .email(user.getEmail())

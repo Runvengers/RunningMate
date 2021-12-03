@@ -26,16 +26,16 @@ public class RunningmateApplication {
 	}
 
 	public static void main(String[] args) {
-
 		SpringApplication.run(RunningmateApplication.class, args);
 	}
 
 	@PostConstruct
 	public void init() {
 		userRepository.save(User.builder()
-				.email("admin")
+				.email("email")
 				.password(passwordEncoder.encode("password"))
 				.roles(Collections.singletonList("ROLE_ADMIN")) // 최초 가입시 USER 로 설정
 				.build()).getId();
 	}
+
 }
