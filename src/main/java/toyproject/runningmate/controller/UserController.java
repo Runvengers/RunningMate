@@ -30,7 +30,6 @@ public class UserController {
                 .roles(Collections.singletonList("ROLE_USER")) // 최초 가입시 USER 로 설정
                 .build()).getId();
     }
-
     //로그인
     @PostMapping("/login")
     public String login(@RequestBody Map<String, String> user) {
