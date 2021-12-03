@@ -33,7 +33,7 @@ public class RunningmateApplication {
 	@PostConstruct
 	public void init() {
 		userRepository.save(User.builder()
-				.email("email")
+				.email("admin")
 				.password(passwordEncoder.encode("password"))
 				.roles(Collections.singletonList("ROLE_ADMIN")) // 최초 가입시 USER 로 설정
 				.build()).getId();
