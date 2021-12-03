@@ -1,4 +1,5 @@
 HELP.md
+.DS_Store
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -8,6 +9,7 @@ build/
 
 build.gradle
 application.properties
+application.yml
 
 
 

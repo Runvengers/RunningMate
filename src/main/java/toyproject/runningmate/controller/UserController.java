@@ -36,7 +36,6 @@ public class UserController {
                 .roles(Collections.singletonList("ROLE_USER")) // 최초 가입시 USER 로 설정
                 .build()).getId();
     }
-
     //로그인
     @PostMapping("/login")
     public String login(@RequestBody Map<String, String> user) {
@@ -109,7 +108,6 @@ public class UserController {
 
         return ResponseEntity.ok("수정 완료");
     }
-
     /**
      * 3번 유저가 2번 유저 프로필 볼 때
      *

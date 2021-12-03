@@ -1,4 +1,12 @@
 package toyproject.runningmate.repository;
 
-public class CrewRepository {
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import toyproject.runningmate.domain.crew.Crew;
+
+import java.util.Optional;
+
+
+public interface CrewRepository extends JpaRepository<Crew, Long> {
+
 }

@@ -1,16 +1,14 @@
 package toyproject.runningmate.domain.user;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import toyproject.runningmate.domain.crew.Crew;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +35,7 @@ public class User implements UserDetails {
 
     private String password;
 
+    @NotNull
     @Column(name = "NICK_NAME")
     private String nickName;
 
