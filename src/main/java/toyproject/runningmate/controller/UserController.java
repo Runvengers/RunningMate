@@ -29,7 +29,6 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
-    private final FriendShipService friendShipService;
 
     /**
      *회원가입
@@ -139,4 +138,14 @@ public class UserController {
         return ResponseEntity.ok().body(findMemberDto);
     }
 
+    @GetMapping("/user/token/validate")
+    public ResponseEntity<String> validateToken(HttpServletRequest request){
+
+        String token = request.getHeader("X-AUTH-TOKEN");
+
+        if(jwtTokenProvider.validateToken(token)) return ResponseEntity.ok().body("ok");
+
+        return ResponseEntity.ok().body("토큰 만료");
+
+    }
 }
