@@ -15,7 +15,9 @@ import toyproject.runningmate.repository.UserRepository;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -31,17 +33,45 @@ public class CrewService {
     private final UserService userService;
 
     @Transactional
-    public Long save(UserDto userDto, CrewDto crewDto) { // Dto로 받아서
+    public Long save(UserDto userDto, CrewDto crewDto) {
 
-        User findUserEntity = userService.getUserEntity(userDto.getNickName());
+        User user = userService.getUserEntity(userDto.getNickName());
 
-        crewDto.setCrewLeaderId(userDto.getId());
+        Crew crew = Crew.builder()
+                .crewLeaderId(userDto.getId())
+                .crewRegion(crewDto.getCrewRegion())
+                .openChat(crewDto.getOpenChat())
+                .crewName(crewDto.getCrewName())
+                .explanation(crewDto.getExplanation())
+                .build();
 
-        Crew crewEntity = crewDto.toEntity();
-        findUserEntity.addCrew(crewEntity);
-        crewRepository.save(crewEntity);
+        user.addCrew(crew);
+        crewRepository.save(crew);
 
-        return crewEntity.getId();  // Entity로 저장
+        return crew.getId();  // Entity로 저장
+    }
+
+    public CrewDto getCrewInfo(String crewName) {
+        Crew crew = em.createQuery(
+                "select distinct c from Crew c" +
+                        " join fetch c.users" +
+                        " left outer join fetch c.requests" +
+                        " where c.crewName = :name", Crew.class)
+                .setParameter("name", crewName)
+                .getSingleResult();
+
+        CrewDto crewDto = crew.toCrewDto();
+        crewDto.setUserDtos(crew.getUsers().stream()
+                .map(o -> o.toUserDto())
+                .collect(Collectors.toList())
+        );
+
+        crewDto.setRequestUsers(crew.getRequests().stream()
+                .map(o -> o.getNickName())
+                .collect(Collectors.toSet())
+        );
+
+        return crewDto;
     }
 
     public CrewDto getCrewByName(String crewName) {
@@ -53,12 +83,6 @@ public class CrewService {
         }
 
         return crew.toCrewDto();
-    }
-
-    public List<UserDto> getCrewMembersByCrewName(String crewName){
-        Crew crew = getCrewEntity(crewName);
-
-        return crew.userEntityListToDtoList();
     }
 
     @Transactional
@@ -93,18 +117,6 @@ public class CrewService {
         User findUser = userService.getUserEntity(userNickName);
 
         findUser.addCrew(crew);
-    }
-
-    public List<String> getRequestList(String crewName) {
-        Crew findCrew = getCrewEntity(crewName);
-
-        List<String> requests = new ArrayList<>();
-
-        for (RequestUserToCrew request : findCrew.getRequests()) {
-            String nickName = request.getNickName();
-            requests.add(nickName);
-        }
-        return requests;
     }
 
     //크루 삭제면 UserDto에 있는 crewName, User에 있는 isCrewLeader 변경

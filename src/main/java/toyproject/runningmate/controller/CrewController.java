@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import toyproject.runningmate.domain.crew.Crew;
 import toyproject.runningmate.dto.CrewDto;
 import toyproject.runningmate.dto.UserDto;
 import toyproject.runningmate.service.CrewService;
 import toyproject.runningmate.service.UserService;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
@@ -61,10 +63,7 @@ public class CrewController {
      */
     @GetMapping("/crews/{crew-name}")
     public CrewDto getCrewPage(@PathVariable("crew-name") String crewName){
-        CrewDto crewDto = crewService.getCrewByName(crewName);
-        crewDto.setUserDtos(crewService.getCrewMembersByCrewName(crewName));
-        crewDto.setRequestUsers(crewService.getRequestList(crewName));
-        return crewDto;
+        return crewService.getCrewInfo(crewName);
     }
 
     /**
