@@ -75,16 +75,9 @@ public class CrewController {
      */
     @PostMapping("/crews/{crew-name}/request")
     public Long registCrew(HttpServletRequest request, @PathVariable("crew-name") String crewName) {
-        UserDto findUserDto = userService.getUserByToken(request);
+        String userName = userService.getEmailByToken(request);
 
-        if(userService.hasCrew(findUserDto.getNickName()))
-            throw new IllegalArgumentException("이미 크루가 존재한다.");
-
-        CrewDto crewDto = crewService.getCrewByName(crewName);
-
-        Long requestId = crewService.saveRequest(findUserDto, crewDto);
-
-        return requestId;
+        return crewService.saveRequest(userName, crewName);
     }
 
     /**

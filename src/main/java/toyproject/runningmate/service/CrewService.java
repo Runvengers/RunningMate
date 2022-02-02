@@ -86,12 +86,13 @@ public class CrewService {
     }
 
     @Transactional
-    public Long saveRequest(UserDto userDto, CrewDto crewDto) {
+    public Long saveRequest(String userName, String crewName) {
         RequestUserToCrew requestUserToCrew = RequestUserToCrew.builder()
-                .nickName(userDto.getNickName())
+                .nickName(userName)
                 .build();
 
-        Crew crew = getCrewEntity(crewDto.getCrewName());
+        Crew crew = getCrewEntity(crewName);
+
         requestUserToCrew.addCrew(crew);
 
         requestRepository.save(requestUserToCrew);
