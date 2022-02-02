@@ -55,7 +55,6 @@ public class CrewService {
         Crew crew = em.createQuery(
                 "select distinct c from Crew c" +
                         " join fetch c.users" +
-                        " left outer join fetch c.requests" +
                         " where c.crewName = :name", Crew.class)
                 .setParameter("name", crewName)
                 .getSingleResult();
