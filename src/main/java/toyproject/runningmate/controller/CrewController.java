@@ -106,8 +106,6 @@ public class CrewController {
 
         crewService.admitUser(nickName);
 
-        crewService.rejectUser(nickName);
-
         return ResponseEntity.ok("추가 완료");
     }
 

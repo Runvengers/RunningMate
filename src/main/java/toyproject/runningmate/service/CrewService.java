@@ -100,23 +100,26 @@ public class CrewService {
     }
 
     @Transactional
-    public void rejectUser(String userNickName){
-        RequestUserToCrew requestUserToCrew = getRequestEntity(userNickName);
+    public void rejectUser(String userName){
+        RequestUserToCrew requestUserToCrew = getRequestEntity(userName);
 
         requestRepository.delete(requestUserToCrew);
     }
 
     @Transactional
-    public void admitUser(String userNickName) {
-        RequestUserToCrew requestUserToCrew = getRequestEntity(userNickName);
+    public void admitUser(String userName) {
+        RequestUserToCrew req = em.createQuery(
+                "select r from RequestUserToCrew  r" +
+                        " join fetch r.crew" +
+                        " where r.nickName=:name", RequestUserToCrew.class)
+                .setParameter("name", userName)
+                .getSingleResult();
+        User user = userService.getUserEntity(userName);
 
-        //가입할 크루
-        Crew crew = requestUserToCrew.getCrew();
+        user.addCrew(req.getCrew());
 
-        //가입할 회원
-        User findUser = userService.getUserEntity(userNickName);
-
-        findUser.addCrew(crew);
+        //"요청"을 수락한 뒤 "요청" 삭제
+        requestRepository.delete(req);
     }
 
     //크루 삭제면 UserDto에 있는 crewName, User에 있는 isCrewLeader 변경
