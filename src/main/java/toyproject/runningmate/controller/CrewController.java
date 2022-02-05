@@ -142,10 +142,11 @@ public class CrewController {
      *xx
      */
     @PatchMapping("/crew/users/{user-name}/edit")
-    public ResponseEntity changeCrewLeader(HttpServletRequest request,@PathVariable("user-name") String userName){
+    public ResponseEntity changeCrewLeader(HttpServletRequest request,
+                                           @PathVariable("user-name") String userName){
 
-        UserDto leaderDto = userService.getUserByToken(request);
-        crewService.changeCrewLeader(leaderDto.getNickName(),userName);
+        String leaderEmail = userService.getEmailByToken(request);
+        crewService.changeCrewLeader(leaderEmail,userName);
 
         return ResponseEntity.ok("위임 완료");
     }
