@@ -162,6 +162,7 @@ public class CrewService {
 
     @Transactional
     public void changeMember(String userName){
+        log.info("userName = {}", userName);
         User user = userService.getUserEntity(userName);
         user.deleteCrew();
     }
