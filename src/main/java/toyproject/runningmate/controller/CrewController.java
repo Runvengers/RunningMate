@@ -61,7 +61,10 @@ public class CrewController {
      */
     @GetMapping("/crews/{crew-name}")
     public CrewDto getCrewPage(@PathVariable("crew-name") String crewName){
-        return crewService.getCrewInfo(crewName);
+        CrewDto crewDto = crewService.getCrewByName(crewName);
+        crewDto.setUserDtos(crewService.getCrewMembersByCrewName(crewName));
+        crewDto.setRequestUsers(crewService.getRequestList(crewName));
+        return crewDto;
     }
 
     /**
@@ -73,9 +76,16 @@ public class CrewController {
      */
     @PostMapping("/crews/{crew-name}/request")
     public Long registCrew(HttpServletRequest request, @PathVariable("crew-name") String crewName) {
-        String userName = userService.getEmailByToken(request);
+        UserDto findUserDto = userService.getUserByToken(request);
 
-        return crewService.saveRequest(userName, crewName);
+        if(userService.hasCrew(findUserDto.getNickName()))
+            throw new IllegalArgumentException("이미 크루가 존재한다.");
+
+        CrewDto crewDto = crewService.getCrewByName(crewName);
+
+        Long requestId = crewService.saveRequest(findUserDto, crewDto);
+
+        return requestId;
     }
 
     /**
@@ -103,6 +113,8 @@ public class CrewController {
     public ResponseEntity admit(@PathVariable("user-name") String nickName){
 
         crewService.admitUser(nickName);
+
+        crewService.rejectUser(nickName);
 
         return ResponseEntity.ok("추가 완료");
     }

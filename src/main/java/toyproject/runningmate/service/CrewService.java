@@ -15,6 +15,7 @@ import toyproject.runningmate.repository.RequestRepository;
 import toyproject.runningmate.repository.UserRepository;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,44 +33,17 @@ public class CrewService {
     private final UserService userService;
 
     @Transactional
-    public Long save(UserDto userDto, CrewDto crewDto) {
+    public Long save(UserDto userDto, CrewDto crewDto) { // Dto로 받아서
 
-        User user = userService.getUserEntity(userDto.getNickName());
+        User findUserEntity = userService.getUserEntity(userDto.getNickName());
 
-        Crew crew = Crew.builder()
-                .crewLeaderId(userDto.getId())
-                .crewRegion(crewDto.getCrewRegion())
-                .openChat(crewDto.getOpenChat())
-                .crewName(crewDto.getCrewName())
-                .explanation(crewDto.getExplanation())
-                .build();
+        crewDto.setCrewLeaderId(userDto.getId());
 
-        user.addCrew(crew);
-        crewRepository.save(crew);
+        Crew crewEntity = crewDto.toEntity();
+        findUserEntity.addCrew(crewEntity);
+        crewRepository.save(crewEntity);
 
-        return crew.getId();  // Entity로 저장
-    }
-
-    public CrewDto getCrewInfo(String crewName) {
-        Crew crew = em.createQuery(
-                "select distinct c from Crew c" +
-                        " join fetch c.users" +
-                        " where c.crewName = :name", Crew.class)
-                .setParameter("name", crewName)
-                .getSingleResult();
-
-        CrewDto crewDto = crew.toCrewDto();
-        crewDto.setUserDtos(crew.getUsers().stream()
-                .map(o -> o.toUserDto())
-                .collect(Collectors.toList())
-        );
-
-        crewDto.setRequestUsers(crew.getRequests().stream()
-                .map(o -> o.getNickName())
-                .collect(Collectors.toSet())
-        );
-
-        return crewDto;
+        return crewEntity.getId();  // Entity로 저장
     }
 
     public CrewDto getCrewByName(String crewName) {
@@ -83,14 +57,19 @@ public class CrewService {
         return crew.toCrewDto();
     }
 
-    @Transactional
-    public Long saveRequest(String userName, String crewName) {
-        RequestUserToCrew requestUserToCrew = RequestUserToCrew.builder()
-                .nickName(userName)
-                .build();
-
+    public List<UserDto> getCrewMembersByCrewName(String crewName){
         Crew crew = getCrewEntity(crewName);
 
+        return crew.userEntityListToDtoList();
+    }
+
+    @Transactional
+    public Long saveRequest(UserDto userDto, CrewDto crewDto) {
+        RequestUserToCrew requestUserToCrew = RequestUserToCrew.builder()
+                .nickName(userDto.getNickName())
+                .build();
+
+        Crew crew = getCrewEntity(crewDto.getCrewName());
         requestUserToCrew.addCrew(crew);
 
         requestRepository.save(requestUserToCrew);
@@ -99,26 +78,35 @@ public class CrewService {
     }
 
     @Transactional
-    public void rejectUser(String userName){
-        RequestUserToCrew requestUserToCrew = getRequestEntity(userName);
+    public void rejectUser(String userNickName){
+        RequestUserToCrew requestUserToCrew = getRequestEntity(userNickName);
 
         requestRepository.delete(requestUserToCrew);
     }
 
     @Transactional
-    public void admitUser(String userName) {
-        RequestUserToCrew req = em.createQuery(
-                "select r from RequestUserToCrew  r" +
-                        " join fetch r.crew" +
-                        " where r.nickName=:name", RequestUserToCrew.class)
-                .setParameter("name", userName)
-                .getSingleResult();
-        User user = userService.getUserEntity(userName);
+    public void admitUser(String userNickName) {
+        RequestUserToCrew requestUserToCrew = getRequestEntity(userNickName);
 
-        user.addCrew(req.getCrew());
+        //가입할 크루
+        Crew crew = requestUserToCrew.getCrew();
 
-        //"요청"을 수락한 뒤 "요청" 삭제
-        requestRepository.delete(req);
+        //가입할 회원
+        User findUser = userService.getUserEntity(userNickName);
+
+        findUser.addCrew(crew);
+    }
+
+    public List<String> getRequestList(String crewName) {
+        Crew findCrew = getCrewEntity(crewName);
+
+        List<String> requests = new ArrayList<>();
+
+        for (RequestUserToCrew request : findCrew.getRequests()) {
+            String nickName = request.getNickName();
+            requests.add(nickName);
+        }
+        return requests;
     }
 
     //크루 삭제면 UserDto에 있는 crewName, User에 있는 isCrewLeader 변경
