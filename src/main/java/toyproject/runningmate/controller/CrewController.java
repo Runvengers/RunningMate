@@ -4,13 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import toyproject.runningmate.domain.crew.Crew;
 import toyproject.runningmate.dto.CrewDto;
 import toyproject.runningmate.dto.UserDto;
 import toyproject.runningmate.service.CrewService;
 import toyproject.runningmate.service.UserService;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
@@ -63,7 +61,10 @@ public class CrewController {
      */
     @GetMapping("/crews/{crew-name}")
     public CrewDto getCrewPage(@PathVariable("crew-name") String crewName){
-        return crewService.getCrewInfo(crewName);
+        CrewDto crewDto = crewService.getCrewByName(crewName);
+        crewDto.setUserDtos(crewService.getCrewMembersByCrewName(crewName));
+        crewDto.setRequestUsers(crewService.getRequestList(crewName));
+        return crewDto;
     }
 
     /**
@@ -75,9 +76,16 @@ public class CrewController {
      */
     @PostMapping("/crews/{crew-name}/request")
     public Long registCrew(HttpServletRequest request, @PathVariable("crew-name") String crewName) {
-        String userName = userService.getEmailByToken(request);
+        UserDto findUserDto = userService.getUserByToken(request);
 
-        return crewService.saveRequest(userName, crewName);
+        if(userService.hasCrew(findUserDto.getNickName()))
+            throw new IllegalArgumentException("이미 크루가 존재한다.");
+
+        CrewDto crewDto = crewService.getCrewByName(crewName);
+
+        Long requestId = crewService.saveRequest(findUserDto, crewDto);
+
+        return requestId;
     }
 
     /**
@@ -105,6 +113,8 @@ public class CrewController {
     public ResponseEntity admit(@PathVariable("user-name") String nickName){
 
         crewService.admitUser(nickName);
+
+        crewService.rejectUser(nickName);
 
         return ResponseEntity.ok("추가 완료");
     }
