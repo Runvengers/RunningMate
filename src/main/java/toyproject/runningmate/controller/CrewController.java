@@ -36,20 +36,12 @@ public class CrewController {
      * 크루 생성
      * 크루 만든 유저 -> 크루 리더 등록
      */
-
     @PostMapping("/crew/new")
-    public ResponseEntity createCrew(HttpServletRequest request, @RequestBody CrewDto crewDto) {
+    public Long createCrewV1(HttpServletRequest request, @RequestBody CrewDto crewDto) {
 
-        UserDto findUserDto = userService.getUserByToken(request);
+        String email = userService.getEmailByToken(request);
 
-        if(userService.hasCrew(findUserDto.getNickName())){  // User의 크루가 이미 존재하는 경우
-            return ResponseEntity.ok("이미 크루가 존재합니다.");
-        }
-
-        crewService.save(findUserDto,crewDto);         // 새 크루 저장
-        userService.updateCrewLeaderStatus(findUserDto.getNickName());    // isCrewLeader 상태 변경
-
-        return new ResponseEntity("크루 생성 완료", HttpStatus.OK);
+        return crewService.save(email, crewDto);
     }
 
     /**
