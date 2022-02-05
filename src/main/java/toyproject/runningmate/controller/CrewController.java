@@ -4,13 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import toyproject.runningmate.domain.crew.Crew;
 import toyproject.runningmate.dto.CrewDto;
 import toyproject.runningmate.dto.UserDto;
 import toyproject.runningmate.service.CrewService;
 import toyproject.runningmate.service.UserService;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
@@ -38,20 +36,12 @@ public class CrewController {
      * 크루 생성
      * 크루 만든 유저 -> 크루 리더 등록
      */
-
     @PostMapping("/crew/new")
-    public ResponseEntity createCrew(HttpServletRequest request, @RequestBody CrewDto crewDto) {
+    public Long createCrewV1(HttpServletRequest request, @RequestBody CrewDto crewDto) {
 
-        UserDto findUserDto = userService.getUserByToken(request);
+        String email = userService.getEmailByToken(request);
 
-        if(userService.hasCrew(findUserDto.getNickName())){  // User의 크루가 이미 존재하는 경우
-            return ResponseEntity.ok("이미 크루가 존재합니다.");
-        }
-
-        crewService.save(findUserDto,crewDto);         // 새 크루 저장
-        userService.updateCrewLeaderStatus(findUserDto.getNickName());    // isCrewLeader 상태 변경
-
-        return new ResponseEntity("크루 생성 완료", HttpStatus.OK);
+        return crewService.save(email, crewDto);
     }
 
     /**
@@ -132,10 +122,11 @@ public class CrewController {
      *xx
      */
     @PatchMapping("/crew/users/{user-name}/edit")
-    public ResponseEntity changeCrewLeader(HttpServletRequest request,@PathVariable("user-name") String userName){
+    public ResponseEntity changeCrewLeader(HttpServletRequest request,
+                                           @PathVariable("user-name") String userName){
 
-        UserDto leaderDto = userService.getUserByToken(request);
-        crewService.changeCrewLeader(leaderDto.getNickName(),userName);
+        String leaderEmail = userService.getEmailByToken(request);
+        crewService.changeCrewLeader(leaderEmail,userName);
 
         return ResponseEntity.ok("위임 완료");
     }
