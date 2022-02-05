@@ -41,7 +41,7 @@ public class FriendShipController {
     }
 
     // 친구 요청 받은 목록
-    @GetMapping("/user/friend/receive")
+    @GetMapping("/user/friends/requests")
     public ResponseEntity<List> getReceivedFriendRequestList(HttpServletRequest request){
         UserDto userDto = userService.getUserByToken(request);  // 토큰으로 유저 찾기
         User userEntity = userService.getUserEntity(userDto.getNickName());
@@ -60,9 +60,9 @@ public class FriendShipController {
 
     //  친구 관계 확인 {SEND,RECEIVE,COMPLETED}
     //  토큰 던지는 유저 : URI 유저
-    @GetMapping("/user/friend/relation/{nickName}")
+    @GetMapping("/user/friends/{requesteeName}")
     public ResponseEntity<String> getFriendShipRelation(HttpServletRequest request,
-                                                        @PathVariable("nickName") String nickName) {
+                                                        @PathVariable("requesteeName") String nickName) {
         UserDto tokenUserDto = userService.getUserByToken(request);
 
         if(!friendShipService.validateFriendShipRelation(tokenUserDto.getNickName(),nickName)){
@@ -72,10 +72,10 @@ public class FriendShipController {
         return ResponseEntity.ok().body(relation);
     }
 
-    // (친구요청/친구수락/요청됨)버튼 눌렀을 때 -> 상태에 따라 기능 달라짐 / 구분 필요
-    @PostMapping("/user/friend/button/{nickName}")
+    // 상대 유저 상세페이지의 친구버튼 눌렀을 때, 마이페이지에서 친구요청 수락 눌렀을 때 호출되는 API
+    @PostMapping("/user/friends/{requesteeName}")
     public ResponseEntity<String> changeFriendShipStatus(HttpServletRequest request,
-                                                         @PathVariable("nickName") String nickName) {
+                                                         @PathVariable("requesteeName") String nickName) {
 
         UserDto tokenUserDto = userService.getUserByToken(request);
 
@@ -99,7 +99,7 @@ public class FriendShipController {
 
         // RECEIVE인 상황에서 버튼 누름 -> 친구 요청 수락
         else if (relation.equals("RECEIVE")) {
-            acceptFriendRequest(request,nickName);
+            friendShipService.acceptFriendRequest(tokenUserDto.getNickName(),nickName);
             return ResponseEntity.ok().body("친구요청 수락 성공");
         }
 
@@ -111,27 +111,10 @@ public class FriendShipController {
         return ResponseEntity.ok().body("잘못된 요청"); // 예외처리
     }
 
-
-    // 친구 요청 수락 ( 내 요청목록에서 수락)
-    @PostMapping("/user/friend/accept/{nickName}")
-    public ResponseEntity<String> acceptFriendRequest(HttpServletRequest request,
-                                                         @PathVariable("nickName") String nickName) {
-
-        UserDto tokenUserDto = userService.getUserByToken(request);
-
-        if(!friendShipService.validateFriendShipRelation(tokenUserDto.getNickName(),nickName)){
-            return ResponseEntity.ok().body("잘못된 요청"); // 예외처리
-        }
-
-        friendShipService.acceptFriendRequest(tokenUserDto.getNickName(),nickName);
-        return ResponseEntity.ok().body("친구요청 수락 성공");
-
-    }
-
     // 친구 요청 취소/ 친구 요청 거절 / 친구 삭제
-    @DeleteMapping("/user/friend/delete/{nickName}")
+    @DeleteMapping("/user/friends/{requesteeName}")
     public ResponseEntity<String> deleteFriendShip(HttpServletRequest request,
-                                                      @PathVariable("nickName") String nickName) {
+                                                      @PathVariable("requesteeName") String nickName) {
         UserDto tokenUserDto = userService.getUserByToken(request);
 
         if(!friendShipService.validateFriendShipRelation(tokenUserDto.getNickName(),nickName)){
