@@ -21,7 +21,7 @@ public class RequestUserToCrew {
     @JoinColumn(name = "CREW_ID")
     private Crew crew;
 
-    @Column(name="NICK_NAME")
+    @Column(name="NICKNAME")
     private String nickName;
 
     @Builder
