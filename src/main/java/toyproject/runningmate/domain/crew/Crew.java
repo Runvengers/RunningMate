@@ -10,7 +10,10 @@ import toyproject.runningmate.dto.UserDto;
 
 
 import javax.persistence.*;
-import java.util.*;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Entity
@@ -39,8 +42,7 @@ public class Crew {
     private String crewName;
 
     @OneToMany(mappedBy = "crew")
-    private Set<RequestUserToCrew> requests = new HashSet<>();
-
+    private List<RequestUserToCrew> requests = new ArrayList<>();
 
     @Column(columnDefinition = "TEXT")
     private String explanation;

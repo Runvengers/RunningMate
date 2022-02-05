@@ -36,12 +36,6 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원")).toUserDto();
     }
 
-    //토큰에서 메일만 추출
-    public String getEmailByToken(HttpServletRequest request) {
-        String token = request.getHeader("X-AUTH-TOKEN");
-        return jwtTokenProvider.getUserPk(token);
-    }
-
     //닉네임에서 User 얻기
     public UserDto getUserByNickName(String nickName) {
         return userRepository.findByNickName(nickName)
