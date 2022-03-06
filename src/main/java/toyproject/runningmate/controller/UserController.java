@@ -114,4 +114,9 @@ public class UserController {
         return userService.validateToken(request);
     }
 
+    @GetMapping("/user/logout")
+    public String logout(HttpServletRequest request){
+        return userService.logout(request);
+    }
+
 }

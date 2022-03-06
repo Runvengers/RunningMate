@@ -2,6 +2,7 @@ package toyproject.runningmate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import toyproject.runningmate.repository.UserRepository;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Transactional(readOnly = true)
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final FriendShipRepository friendShipRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate redisTemplate;
 
     //토큰에서 User 추출
     public UserDto getUserByToken(HttpServletRequest request) {
@@ -129,6 +132,17 @@ public class UserService {
 
         if (jwtTokenProvider.validateToken(token)) return "유효한 토큰";
         else return "만료된 토큰";
+    }
+
+    public String logout(HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+
+        if(!jwtTokenProvider.validateToken(token)){ // 이미 만료됐거나, 잘못된 형식의 토큰일 때
+            return "잘못된 요청입니다";
+        }
+        Long expiration = jwtTokenProvider.getExpiration(token);
+        redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.MILLISECONDS);
+        return "로그아웃 성공";
     }
 
 }

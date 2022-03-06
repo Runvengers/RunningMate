@@ -1,9 +1,12 @@
 package toyproject.runningmate.config.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.GenericFilterBean;
+import toyproject.runningmate.exception.ExpiredTokenException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -17,10 +20,12 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisTemplate redisTemplate;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        //헤더에서 JWT를 받아온다.
+
+//      헤더에서 JWT를 받아온다.
         System.out.println("JwtAuthenticationFilter.doFilter");
 
         System.out.println(request.toString());
@@ -36,10 +41,20 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
         //유효한 토큰인지 확인
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            //토큰이 유효하면 토큰으로부터 유저 정보를 받아온다.
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            //SecurityContext에 Authentication 객체를 저장한다.
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // logout된 토큰인지 확인하는 절차
+            String isLogout = (String) redisTemplate.opsForValue().get(token);
+
+            if (ObjectUtils.isEmpty(isLogout)) {
+                //토큰이 유효하면 토큰으로부터 유저 정보를 받아온다.
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                //SecurityContext에 Authentication 객체를 저장한다.
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+            else {
+                throw new ExpiredTokenException("로그아웃 된 토큰입니다");
+            }
+
         }
 
         final HttpServletResponse res = (HttpServletResponse) response;
@@ -54,5 +69,4 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             chain.doFilter(request, res);
         }
     }
-
 }
